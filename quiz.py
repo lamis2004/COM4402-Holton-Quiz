@@ -3,11 +3,12 @@
 # QUESTIONS is a list of dictionaries. Each dictionary contains:
 #   - "text":    the question text
 #   - "options": a list of four possible answers
-#   - "answer":  the correct option number (1–4)
+#   - "answer":  the correct option number (1-4)
+
 QUESTIONS = [
     {
         "text": "Which operator checks equality in Python?",
-        "options": ["=", "==", "===", "!=",],
+        "options": ["=", "==", "===", "!="],
         "answer": 2,
     },
     {
