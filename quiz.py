@@ -1,17 +1,20 @@
 """Console-based multiple-choice quiz for the Holton College Digital Quiz System (PoC)."""
 
 # QUESTIONS is a list of dictionaries. Each dictionary contains:
+#   - "topic":   the topic of the question (e.g. Operators, Loops)
 #   - "text":    the question text
 #   - "options": a list of four possible answers
 #   - "answer":  the correct option number (1-4)
 
 QUESTIONS = [
     {
+        "topic": "Operators",
         "text": "Which operator checks equality in Python?",
         "options": ["=", "==", "===", "!="],
         "answer": 2,
     },
     {
+        "topic": "Loops",
         "text": "What does range(1, 6) generate in a Python for-loop?",
         "options": [
             "1, 2, 3, 4, 5, 6",
@@ -22,6 +25,7 @@ QUESTIONS = [
         "answer": 3,
     },
     {
+        "topic": "Loops",
         "text": "What is the purpose of break inside a loop?",
         "options": [
             "Skip the current iteration and continue",
@@ -32,6 +36,7 @@ QUESTIONS = [
         "answer": 2,
     },
     {
+        "topic": "Strings and f-strings",
         "text": "Which of the following is a valid f-string in Python?",
         "options": [
             'print(f"Score: {score}")',
@@ -42,6 +47,7 @@ QUESTIONS = [
         "answer": 1,
     },
     {
+        "topic": "Lists",
         "text": "Which line correctly appends the value 5 to the end of a list called nums?",
         "options": [
             "nums.add(5)",
@@ -52,6 +58,7 @@ QUESTIONS = [
         "answer": 2,
     },
     {
+        "topic": "Loops",
         "text": "Which is the correct way to start a while loop in Python?",
         "options": [
             "while (x > 0) then:",
@@ -64,42 +71,102 @@ QUESTIONS = [
 ]
 
 
-def check_answer(user_answer_str, correct_answer):
-    """
-    Validate the user's answer and check if it is correct.
+def get_available_topics():
+    """Return a sorted list of distinct topics in the QUESTIONS list."""
+    topics = {question["topic"] for question in QUESTIONS}
+    return sorted(topics)
 
-    Args:
-        user_answer_str (str): The raw input entered by the user.
-        correct_answer (int): The correct option number (1–4).
+
+def choose_topic():
+    """Allow the user to choose a topic or all topics for the quiz."""
+    topics = get_available_topics()
+
+    print("Please choose a quiz topic:")
+    print("0. All topics")
+
+    number = 1
+    for topic in topics:
+        print(f"{number}. {topic}")
+        number += 1
+
+    while True:
+        choice = input("Enter your choice (0 for all topics): ")
+
+        if not choice.isdigit():
+            print("Invalid input. Please enter a number.")
+            continue
+
+        choice_number = int(choice)
+
+        if choice_number == 0:
+            return None  # None means all topics
+        if 1 <= choice_number <= len(topics):
+            return topics[choice_number - 1]
+
+        print("Invalid choice. Please enter one of the numbers shown above.")
+
+
+def get_valid_answer(num_options):
+    """
+    Repeatedly ask the user for an answer until a valid option number is entered.
 
     Returns:
-        tuple[bool, bool]:
-            valid_input (bool): True if the input is numeric (0–9).
-            is_correct (bool): True if the answer matches correct_answer.
+        int: A valid option number between 1 and num_options (inclusive).
     """
-    if not user_answer_str.isdigit():
-        # Non-numeric input – handled as invalid
-        print("Invalid input.")
-        return False, False
+    while True:
+        user_answer = input(f"Enter your answer (1-{num_options}): ")
 
-    user_answer = int(user_answer_str)
+        if not user_answer.isdigit():
+            print("Invalid input. Please enter a number.")
+            continue
 
+        answer_number = int(user_answer)
+
+        if 1 <= answer_number <= num_options:
+            return answer_number
+
+        print("Invalid option. Please enter one of the numbers shown above.")
+
+
+def check_answer(user_answer, correct_answer):
+    """
+    Check if the user's answer is correct and print feedback.
+
+    Args:
+        user_answer (int): The option number chosen by the user.
+        correct_answer (int): The correct option number.
+    """
     if user_answer == correct_answer:
         print("Correct!")
-        return True, True
+        return True
 
-    # Numeric but not equal to the correct answer (including 0 or 5)
     print("Incorrect.")
-    return True, False
+    return False
 
 
 def run_quiz():
     """Run the quiz once and display the final score."""
+    selected_topic = choose_topic()
+
+    if selected_topic is None:
+        questions_to_ask = QUESTIONS
+        print("\nYou chose: All topics.")
+    else:
+        questions_to_ask = [
+            question for question in QUESTIONS if question["topic"] == selected_topic
+        ]
+        print(f"\nYou chose topic: {selected_topic}.")
+
+    if not questions_to_ask:
+        print("There are no questions available for the selected topic.")
+        return
+
     score = 0
     question_number = 1
 
-    for question in QUESTIONS:
+    for question in questions_to_ask:
         print("\nQuestion", question_number)
+        print(f"Topic: {question['topic']}")
         print(question["text"])
 
         option_number = 1
@@ -107,27 +174,25 @@ def run_quiz():
             print(f"{option_number}. {option}")
             option_number += 1
 
-        user_answer = input("Enter your answer (1-4): ")
+        user_answer = get_valid_answer(len(question["options"]))
 
-        valid_input, is_correct = check_answer(user_answer, question["answer"])
-
-        # Increase score only when the input is valid and the answer is correct
-        if valid_input and is_correct:
+        if check_answer(user_answer, question["answer"]):
             score += 1
 
         question_number += 1
 
     print("\nQuiz Finished!")
-    print(f"Your final score is {score} out of {len(QUESTIONS)}")
+    print(f"Your final score is {score} out of {len(questions_to_ask)}")
     print("Thank you for playing the Holton College Quiz!")
 
 
 def main():
     """Entry point of the application."""
     print("Welcome to the Holton College Quiz!")
-    print("Please answer by typing 1, 2, 3, or 4 for each question.\n")
+    print("You will answer multiple-choice questions by typing 1, 2, 3, or 4.\n")
     run_quiz()
 
 
 if __name__ == "__main__":
     main()
+
